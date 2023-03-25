@@ -49,28 +49,24 @@ def replied(comt, user):
 print(f"Started the bot at {now}")
 
 
-# The search function that return all comments with all the words that are in sussy_check list
-def amongus_generator(user):
-    sus_list = []
-    for key2 in sussy_check:
-        sus_list.append(pushshift.search_comments(q=key2, author=user, limit=1000, mem_safe=True))
-    for items in fusion(sus_list):
-        yield items
+# The search function that return all comments with all the words that are in sussy_check list:
+def amongus_generator(key, usr):
+    sus_list = pushshift.search_comments(q=key, author=usr, limit=1000)
+    result = [item.lower() for items in sus_list for item in items['body'].split(" ") if all([item.lower() == key, items['body'] != "[deleted]"])]  
+    # This list comprehension is the same as:
+    # result = []
+    # for items in sus_list:
+    #     if items['body'] != "[deleted]":
+    #         for item in items['body'].split(" "):
+    #             if item.lower() == key:
+    #                 result.append(item.lower())
+    # Made that because list comprehensions are way faster than regular for loops
+    return result
 
 
 # The main function, basically.
 def amongus_counter(user):
-    lista = []
-    sussy_dict = {key1: 0 for key1 in sussy_check}
-    for item1 in amongus_generator(user):
-        for it in item1:
-            if it['body'] not in lista and it['body'] != "[deleted]":
-                for item2 in it['body'].split(" "):
-                    if item2 in sussy_check:
-                        lista.append(item2)
-    for it2 in lista:
-        sussy_dict[it2] += 1
-    result = {k: v for k, v in sussy_dict.items() if v != 0}
+    result = {key1: len(amongus_generator(key1, user)) for key1 in sussy_check if len(amongus_generator(key1, user)) != 0}
     if not result:
         return "not sus"
     return result
